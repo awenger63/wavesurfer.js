@@ -396,14 +396,13 @@ export default class TimelinePlugin {
         const secondaryLabelInterval = intervalFnOrVal(
             this.params.secondaryLabelInterval
         );
-
-        let curPixel = this.params.isRealFirstInterval 
-                        ? 0 
-                        : (this.params.startSeconds % timeInterval) * pixelsPerSecond;
-        let curSeconds = this.params.startSeconds 
-                        + ((this.params.isRealFirstInterval || timeInterval === 1)
-                           ? 0 
-                           : (timeInterval - (this.params.startSeconds % timeInterval)));
+        
+        // look if it's exist a delta interval to begin first interval and label
+        const deltaInterval = (this.params.isRealFirstInterval || timeInterval === 1) 
+        ? 0 
+        : (timeInterval - (this.params.startSeconds % timeInterval)) % timeInterval;
+        let curPixel = deltaInterval * pixelsPerSecond;
+        let curSeconds = this.params.startSeconds + deltaInterval;
         let i;
         // build an array of position data with index, second and pixel data,
         // this is then used multiple times below
