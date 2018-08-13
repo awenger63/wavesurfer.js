@@ -17,6 +17,7 @@
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
  * @property {number} startSeconds=0 Start time in seconds for beginning timeline rule
+ * @property {boolean} isRealFirstInterval: true if the interval of the rule begin on the real startSeconds or in the first timeInterval rounded
  * @property {string} formatTime='MM:SS' default time format for timeline rule, can be changed to 'HH:MM:SS'
  * @property {function} formatTimeCallback=00:00 (or 00:00:00 depending on formatTime property)
  * @property {?boolean} deferInit Set to true to manually call
@@ -134,6 +135,7 @@ export default class TimelinePlugin {
                 fontFamily: 'Arial',
                 fontSize: 10,
                 zoomDebounce: false,
+                isRealFirstInterval: true,
                 startSeconds: 0,
                 formatTime: 'MM:SS',
                 formatTimeCallback(seconds, format) {
@@ -394,9 +396,13 @@ export default class TimelinePlugin {
         const secondaryLabelInterval = intervalFnOrVal(
             this.params.secondaryLabelInterval
         );
-
-        let curPixel = 0;
-        let curSeconds = this.params.startSeconds;
+        
+        // look if it's exist a delta interval to begin first interval and label
+        const deltaInterval = (this.params.isRealFirstInterval || timeInterval === 1) 
+        ? 0 
+        : (timeInterval - (this.params.startSeconds % timeInterval)) % timeInterval;
+        let curPixel = deltaInterval * pixelsPerSecond;
+        let curSeconds = this.params.startSeconds + deltaInterval;
         let i;
         // build an array of position data with index, second and pixel data,
         // this is then used multiple times below
